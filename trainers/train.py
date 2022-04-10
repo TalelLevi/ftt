@@ -1,7 +1,6 @@
 
 import torch
-from train_result import FitResult, BatchResult, EpochResult
-from src.base_classes.abstract_trainer import Trainer
+from base_classes.abstract_trainer import Trainer
 
 
 # ============== Inherit train Class ==============
@@ -12,10 +11,7 @@ class TorchTrainer(Trainer):
     def train_batch(self, batch):  # -> BatchResult:
         X, y = batch
         if self.device:
-            if self.model.module.pretraining:
-                X = [X[0].to(self.device), X[1].to(self.device)]
-            else:
-                X = X.to(self.device)
+            X = X.to(self.device)
             y = y.to(self.device)
 
         # Train the PyTorch model on one batch of data.

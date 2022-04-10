@@ -29,7 +29,7 @@ class Trainer(abc.ABC):
         :param device: torch.device to run training on (CPU or GPU).
         """
         self.model = model
-        self.model_without_ddp = self.model.module
+        self.model_without_ddp = self.model#.module
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.metric = metrics
@@ -89,7 +89,7 @@ class Trainer(abc.ABC):
             train_acc.append(res.accuracy)
 
 
-            if not self.model.module.pretraining:
+            if not self.model:
                 res = self.test_epoch(dl_test, **kw)
                 test_loss.append(sum(res.losses)/len(res.losses))
                 # test_loss.extend(res.losses)
