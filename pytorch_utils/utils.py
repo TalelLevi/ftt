@@ -103,7 +103,7 @@ def set_p_dropout(model: nn.Module,
     i : int
         current recursion depth
     """
-    assert isinstance(p, float) and p > 0.0 and p < 1.0, 'p must be a float: 0.0 < p < 1.0'
+    assert isinstance(p, float) and 0.0 < p < 1.0
     if isinstance(model, nn.Dropout):
         model.p = p
     elif i < max_rec_depth and isinstance(model, nn.Module):
@@ -136,3 +136,16 @@ def set_temp_seed(seed: int):
     finally:
         torch.random.set_rng_state(prev_state)
 
+
+def measure_runtime(func):
+    def wrapper(*args, **kw):
+
+        ts = time.time()
+        result = func(*args, **kw)
+        te = time.time()
+
+        runtime = round(te-ts, 2)
+        print(f'{func.__name__} ran in {runtime}s')
+
+        return result
+    return wrapper
