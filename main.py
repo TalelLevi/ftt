@@ -6,6 +6,9 @@ from models.vit import ViT
 from metrics.accuracy_metric import accuracy_metric
 from trainers.train import TorchTrainer as Trainer
 import matplotlib.pyplot as plt
+from clearml import Task
+
+task = Task.init(project_name="Fast ViT learning", task_name="test")
 
 # standard imagenet stats
 imagenet_mean = [0.485, 0.456, 0.406]
@@ -49,12 +52,12 @@ model = ViT(
 
 criterion = torch.nn.CrossEntropyLoss()
 metrics_clf = [accuracy_metric()]
-optimizer = torch.optim.Adam([p for p in model.parameters() if p.requires_grad],lr=0.001)
-device = 'cuda'#'cpu'
+optimizer = torch.optim.Adam([p for p in model.parameters() if p.requires_grad], lr=0.001)
+device = 'cuda'  # 'cpu'
 
-trainer = Trainer(model, criterion, optimizer, metrics=metrics_clf,device=device)
-res = trainer.fit(train_loader, val_loader, 200,checkpoint_path=f'model.pth')
-for y_axis, name in zip(res[1:], ['train_loss', 'train_acc', 'test_loss', 'test_acc']): # TODO change to plotter
+trainer = Trainer(model, criterion, optimizer, metrics=metrics_clf, device=device)
+res = trainer.fit(train_loader, val_loader, 200, checkpoint_path=f'model.pth')
+for y_axis, name in zip(res[1:], ['train_loss', 'train_acc', 'test_loss', 'test_acc']):  # TODO change to plotter
     plt.plot(y_axis, label=name)
     plt.savefig(f'plot_{name}.jpg')
     plt.clf()
