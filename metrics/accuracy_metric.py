@@ -1,6 +1,7 @@
 from base_classes.abstract_metric import Metric
 import torch
 
+
 class accuracy_metric(Metric):
     def __init__(self):
         super().__init__()
