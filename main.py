@@ -8,7 +8,7 @@ from trainers.train import TorchTrainer as Trainer
 import matplotlib.pyplot as plt
 from clearml import Task
 
-task = Task.init(project_name="Fast ViT learning", task_name="test")
+task = Task.init(project_name="Fast ViT learning", task_name="bs 64 lr 1e-4")
 
 # standard imagenet stats
 imagenet_mean = [0.485, 0.456, 0.406]
@@ -54,11 +54,11 @@ model = torchvision.models.vit_b_16()
 
 criterion = torch.nn.CrossEntropyLoss()
 metrics_clf = [accuracy_metric()]
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 device = 'cuda'  # 'cpu'
 
 trainer = Trainer(model, criterion, optimizer, metrics=metrics_clf, device=device)
-res = trainer.fit(train_loader, val_loader, num_epochs=4, checkpoint_path=f'model.pth')
+res = trainer.fit(train_loader, val_loader, num_epochs=300, checkpoint_path=f'model.pth')
 for y_axis, name in zip(res[1:], ['train_loss', 'train_acc', 'test_loss', 'test_acc']):  # TODO change to plotter
     plt.plot(y_axis, label=name)
     plt.savefig(f'plot_{name}.jpg')
