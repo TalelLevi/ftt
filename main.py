@@ -21,6 +21,8 @@ transform = torchvision.transforms.Compose([
     torchvision.transforms.Normalize(mean=imagenet_mean, std=imagenet_std),
 ])
 
+from data_loader.data_loader import create_train_loader, create_val_loader
+
 train_dataset = Dataset(os.path.join(os.path.join('data', 'imagenette2'), 'train'), transform,
                         preload_data=False, tqdm_bar=True)
 # train_eval_dataset = utils.Dataset(os.path.join(args.data_path, 'train'), TwoCropsTransform(clf_train_transforms),
@@ -28,15 +30,19 @@ train_dataset = Dataset(os.path.join(os.path.join('data', 'imagenette2'), 'train
 val_dataset = Dataset(os.path.join(os.path.join('data', 'imagenette2'), 'val'), transform,
                       preload_data=False, tqdm_bar=True)
 
-train_loader = torch.utils.data.DataLoader(train_dataset,
-                                           batch_size=16,
-                                           num_workers=2,
-                                           drop_last=True, shuffle=True, pin_memory=True)
+# train_loader = torch.utils.data.DataLoader(train_dataset,
+#                                            batch_size=16,
+#                                            num_workers=2,
+#                                            drop_last=True, shuffle=True, pin_memory=True)
+#
+# val_loader = torch.utils.data.DataLoader(val_dataset,
+#                                          batch_size=16,
+#                                          num_workers=2,
+#                                          drop_last=True, shuffle=False, pin_memory=True)
 
-val_loader = torch.utils.data.DataLoader(val_dataset,
-                                         batch_size=16,
-                                         num_workers=2,
-                                         drop_last=True, shuffle=False, pin_memory=True)
+train_loader = create_train_loader(train_dataset=train_dataset)
+
+val_loader = create_val_loader(val_dataset=val_dataset)
 
 # model = ViT(
 #     image_size=224,
@@ -55,7 +61,7 @@ model = torchvision.models.vit_b_16()
 criterion = torch.nn.CrossEntropyLoss()
 metrics_clf = [accuracy_metric()]
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-device = 'cuda'  # 'cpu'
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 trainer = Trainer(model, criterion, optimizer, metrics=metrics_clf, device=device)
 res = trainer.fit(train_loader, val_loader, num_epochs=300, checkpoint_path=f'model.pth')
