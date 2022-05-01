@@ -18,7 +18,7 @@
 # Conda parameters
 #
 CONDA_HOME=$HOME/miniconda3
-CONDA_ENV=fft
+CONDA_ENV=ffcv
 
 unset XDG_RUNTIME_DIR
 source $CONDA_HOME/etc/profile.d/conda.sh

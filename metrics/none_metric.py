@@ -1,4 +1,4 @@
-from src.base_classes.abstract_metric import Metric
+from base_classes.abstract_metric import Metric
 
 
 class none_metric(Metric):

@@ -2,7 +2,7 @@ import torch
 import torchvision
 import os
 from data_loader.data_loader import Dataset
-from models.vit import ViT
+# from models.vit import ViT
 from metrics.accuracy_metric import accuracy_metric
 from trainers.train import TorchTrainer as Trainer
 import matplotlib.pyplot as plt
@@ -29,13 +29,13 @@ val_dataset = Dataset(os.path.join(os.path.join('data', 'imagenette2'), 'val'), 
                       preload_data=False, tqdm_bar=True)
 
 train_loader = torch.utils.data.DataLoader(train_dataset,
-                                           batch_size=128,
-                                           num_workers=8,
+                                           batch_size=16,
+                                           num_workers=2,
                                            drop_last=True, shuffle=True, pin_memory=True)
 
 val_loader = torch.utils.data.DataLoader(val_dataset,
-                                         batch_size=128,
-                                         num_workers=8,
+                                         batch_size=16,
+                                         num_workers=2,
                                          drop_last=True, shuffle=False, pin_memory=True)
 
 # model = ViT(
@@ -58,7 +58,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 device = 'cuda'  # 'cpu'
 
 trainer = Trainer(model, criterion, optimizer, metrics=metrics_clf, device=device)
-res = trainer.fit(train_loader, val_loader, num_epochs=300, checkpoint_path=f'model.pth')
+res = trainer.fit(train_loader, val_loader, num_epochs=4, checkpoint_path=f'model.pth')
 for y_axis, name in zip(res[1:], ['train_loss', 'train_acc', 'test_loss', 'test_acc']):  # TODO change to plotter
     plt.plot(y_axis, label=name)
     plt.savefig(f'plot_{name}.jpg')

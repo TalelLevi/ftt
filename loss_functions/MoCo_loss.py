@@ -1,6 +1,6 @@
 import torch.nn.functional
 
-from src.base_classes.abstract_loss import LossFunction
+from base_classes.abstract_loss import LossFunction
 
 
 class ContrastiveLoss(LossFunction):
