@@ -2,6 +2,29 @@ import torch
 import torchvision
 import tqdm
 
+
+from pathlib import Path
+from ffcv.pipeline.operation import Operation
+from ffcv.loader import Loader, OrderOption
+from ffcv.transforms import ToTensor, ToDevice, Squeeze, NormalizeImage, \
+    RandomHorizontalFlip, ToTorchImage
+from ffcv.fields.rgb_image import CenterCropRGBImageDecoder, \
+    RandomResizedCropRGBImageDecoder
+from ffcv.fields.basics import IntDecoder
+import numpy as np
+from typing import List
+
+from fastargs import get_current_config
+from fastargs.decorators import param
+from fastargs import Param, Section
+from fastargs.validation import And, OneOf
+
+IMAGENET_MEAN = np.array([0.485, 0.456, 0.406]) * 255
+IMAGENET_STD = np.array([0.229, 0.224, 0.225]) * 255
+DEFAULT_CROP_RATIO = 224/256
+
+
+
 class Dataset(torch.utils.data.Dataset):
     """ a Dataset class for preloading data into memory """
     def __init__(self,
@@ -45,25 +68,6 @@ class Dataset(torch.utils.data.Dataset):
 
 ####################################################################
 
-from pathlib import Path
-from ffcv.pipeline.operation import Operation
-from ffcv.loader import Loader, OrderOption
-from ffcv.transforms import ToTensor, ToDevice, Squeeze, NormalizeImage, \
-    RandomHorizontalFlip, ToTorchImage
-from ffcv.fields.rgb_image import CenterCropRGBImageDecoder, \
-    RandomResizedCropRGBImageDecoder
-from ffcv.fields.basics import IntDecoder
-import numpy as np
-from typing import List
-
-from fastargs import get_current_config
-from fastargs.decorators import param
-from fastargs import Param, Section
-from fastargs.validation import And, OneOf
-
-IMAGENET_MEAN = np.array([0.485, 0.456, 0.406]) * 255
-IMAGENET_STD = np.array([0.229, 0.224, 0.225]) * 255
-DEFAULT_CROP_RATIO = 224/256
 
 
 

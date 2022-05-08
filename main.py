@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from clearml import Task
 
 task = Task.init(project_name="Fast ViT learning", task_name="testing clearML - acc and loss")
-logger = task.get_logger
+logger = task.get_logger()
 
 # standard imagenet stats
 imagenet_mean = [0.485, 0.456, 0.406]
@@ -31,19 +31,19 @@ train_dataset = Dataset(os.path.join(os.path.join('data', 'imagenette2'), 'train
 val_dataset = Dataset(os.path.join(os.path.join('data', 'imagenette2'), 'val'), transform,
                       preload_data=False, tqdm_bar=True)
 
-# train_loader = torch.utils.data.DataLoader(train_dataset,
-#                                            batch_size=16,
-#                                            num_workers=2,
-#                                            drop_last=True, shuffle=True, pin_memory=True)
+train_loader = torch.utils.data.DataLoader(train_dataset,
+                                           batch_size=16,
+                                           num_workers=2,
+                                           drop_last=True, shuffle=True, pin_memory=True)
+
+val_loader = torch.utils.data.DataLoader(val_dataset,
+                                         batch_size=16,
+                                         num_workers=2,
+                                         drop_last=True, shuffle=False, pin_memory=True)
+
+# train_loader = create_train_loader(train_dataset=train_dataset)
 #
-# val_loader = torch.utils.data.DataLoader(val_dataset,
-#                                          batch_size=16,
-#                                          num_workers=2,
-#                                          drop_last=True, shuffle=False, pin_memory=True)
-
-train_loader = create_train_loader(train_dataset=train_dataset)
-
-val_loader = create_val_loader(val_dataset=val_dataset)
+# val_loader = create_val_loader(val_dataset=val_dataset)
 
 # model = ViT(
 #     image_size=224,

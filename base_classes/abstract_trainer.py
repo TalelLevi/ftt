@@ -77,23 +77,15 @@ class Trainer(abc.ABC):
                 verbose = True
             self._print(f"--- EPOCH {epoch + 1}/{num_epochs} ---", verbose)
 
-            # Train & evaluate for one epoch
-            #  - Use the train/test_epoch methods.
-            #  - Save losses and accuracies in the lists above.
-            #  - Implement early stopping. This is a very useful and
-            #    simple regularization technique that is highly recommended.
-            #  - Optional: Implement checkpoints. You can use torch.save() to
-            #    save the model to the file specified by the checkpoints
-            #    argument.
-            # =====================
+            ######################################
             res = self.train_epoch(dl_train, **kw)
 
             avg_loss = sum(res.losses) / len(res.losses)
 
-            self.logger.report_scalar(title=f'loss on {epoch} - epoch',
+            self.logger.report_scalar(title=f'Loss per epoch',
                                       series='Loss', value=avg_loss, iteration=epoch)
 
-            self.logger.report_scalar(title=f'accuracy on {epoch} - epoch',
+            self.logger.report_scalar(title=f'Accuracy per epoch',
                                       series='Accuracy', value=res.accuracy, iteration=epoch)
 
             train_loss.append(avg_loss)
