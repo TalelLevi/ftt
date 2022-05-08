@@ -138,6 +138,11 @@ def set_temp_seed(seed: int):
 
 
 def measure_runtime(func):
+    """
+    measures the running time of a function
+    :param func: the func that we will measure it's runtime
+    :return:
+    """
     def wrapper(*args, **kw):
 
         ts = time.time()

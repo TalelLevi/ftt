@@ -7,6 +7,7 @@ import tqdm
 import torch
 from typing import Any, Callable
 from torch.utils.data import DataLoader
+from pytorch_utils.utils import measure_runtime
 from train_result import FitResult, BatchResult, EpochResult
 
 
@@ -20,20 +21,22 @@ class Trainer(abc.ABC):
     - Single batch (train_batch/test_batch)
     """
 
-    def __init__(self, model, loss_fn, optimizer, metrics=None, device=None):
+    def __init__(self, model, loss_fn, optimizer, metrics=None, device=None, logger=None):
         """
         Initialize the trainer.
         :param model: Instance of the model to train.
         :param loss_fn: The loss function to evaluate with.
         :param optimizer: The optimizer to train with.
         :param device: torch.device to run training on (CPU or GPU).
+        :param logger: clearML logger to track the model
         """
         self.model = model
-        self.model_without_ddp = self.model#.module
+        self.model_without_ddp = self.model  # .module
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.metric = metrics
         self.device = device
+        self.logger = logger
 
         if self.device:
             model.to(self.device)
@@ -84,14 +87,22 @@ class Trainer(abc.ABC):
             #    argument.
             # =====================
             res = self.train_epoch(dl_train, **kw)
-            train_loss.append(sum(res.losses)/len(res.losses))
+
+            avg_loss = sum(res.losses) / len(res.losses)
+
+            self.logger.report_scalar(title=f'loss on {epoch} - epoch',
+                                      series='Loss', value=avg_loss, iteration=epoch)
+
+            self.logger.report_scalar(title=f'accuracy on {epoch} - epoch',
+                                      series='Accuracy', value=res.accuracy, iteration=epoch)
+
+            train_loss.append(avg_loss)
             # train_loss.extend(torch.mean(res.losses))
             train_acc.append(res.accuracy)
 
-
             if not self.model:
                 res = self.test_epoch(dl_test, **kw)
-                test_loss.append(sum(res.losses)/len(res.losses))
+                test_loss.append(sum(res.losses) / len(res.losses))
                 # test_loss.extend(res.losses)
                 test_acc.append(res.accuracy)
             else:
@@ -100,6 +111,7 @@ class Trainer(abc.ABC):
                 test_acc.append(res.accuracy)
             actual_num_epochs += 1
 
+            # TODO generic the whole early stopping, also add decreasing learning rate
             if res.accuracy > best_acc:
                 epochs_without_improvement = 0
                 best_acc = res.accuracy
@@ -114,6 +126,7 @@ class Trainer(abc.ABC):
             # ========================
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
 
+    @measure_runtime
     def train_epoch(self, dl_train: DataLoader, **kw) -> EpochResult:
         """
         Train once over a training set (single epoch).
@@ -210,7 +223,7 @@ class Trainer(abc.ABC):
 
             avg_loss = sum(losses) / num_batches
             # accuracy = 100.0 * num_correct / num_samples    # TODO update to handle N number of metrics
-            accuracy = sum(batch_results)/len(batch_results)
+            accuracy = sum(batch_results) / len(batch_results)
             pbar.set_description(
                 f"{pbar_name} "
                 f"(Avg. Loss {avg_loss:.3f}, "
