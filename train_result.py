@@ -17,7 +17,7 @@ class EpochResult(NamedTuple):
     and accuracy on the dataset (train or test).
     """
 
-    losses: List[float]
+    loss: float
     accuracy: float
 
 

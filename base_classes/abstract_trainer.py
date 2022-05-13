@@ -1,4 +1,3 @@
-import os
 import abc
 import sys
 
@@ -27,6 +26,7 @@ class Trainer(abc.ABC):
         :param model: Instance of the model to train.
         :param loss_fn: The loss function to evaluate with.
         :param optimizer: The optimizer to train with.
+        :param metrics: a list of metrics to apply on the model output
         :param device: torch.device to run training on (CPU or GPU).
         :param logger: clearML logger to track the model
         """
@@ -48,9 +48,8 @@ class Trainer(abc.ABC):
             num_epochs,
             checkpoint_path: str = None,
             early_stopping: int = None,
-            print_every=1,
             **kw,
-    ) -> FitResult:
+    ):
         """
         Trains the model for multiple epochs with a given training set,
         and calculates validation loss over a given validation set.
@@ -62,7 +61,6 @@ class Trainer(abc.ABC):
             filename without extension.
         :param early_stopping: Whether to stop training early if there is no
             test loss improvement for this number of epochs.
-        :param print_every: Print progress every this number of epochs.
         :return: A FitResult object containing train and test losses per epoch.
         """
         actual_num_epochs = 0
@@ -72,34 +70,28 @@ class Trainer(abc.ABC):
         epochs_without_improvement = 0
 
         for epoch in range(num_epochs):
-            verbose = False  # pass this to train/test_epoch.
-            if epoch % print_every == 0 or epoch == num_epochs - 1:
-                verbose = True
-            self._print(f"--- EPOCH {epoch + 1}/{num_epochs} ---", verbose)
+            print(f"--- EPOCH {epoch + 1}/{num_epochs} ---")
 
-            ######################################
-            res = self.train_epoch(dl_train, **kw)
-
-            avg_loss = sum(res.losses) / len(res.losses)
+            epoch_time, res = self.train_epoch(dl_train, **kw)
 
             self.logger.report_scalar(title=f'Loss per epoch',
-                                      series='Loss', value=avg_loss, iteration=epoch)
+                                      series='Loss', value=res.loss, iteration=epoch)
 
             self.logger.report_scalar(title=f'Accuracy per epoch',
                                       series='Accuracy', value=res.accuracy, iteration=epoch)
 
-            train_loss.append(avg_loss)
-            # train_loss.extend(torch.mean(res.losses))
+            self.logger.report_scalar(title=f'Runtime by epoch',
+                                      series='mili-seconds', value=epoch_time, iteration=epoch)
+
+            train_loss.append(res.loss)
             train_acc.append(res.accuracy)
 
             if not self.model:
                 res = self.test_epoch(dl_test, **kw)
-                test_loss.append(sum(res.losses) / len(res.losses))
-                # test_loss.extend(res.losses)
+                test_loss.append(res.loss)
                 test_acc.append(res.accuracy)
             else:
-                # test_loss.extend(res.losses)
-                test_loss.append(sum(res.losses) / len(res.losses))
+                test_loss.append(res.loss)
                 test_acc.append(res.accuracy)
             actual_num_epochs += 1
 
@@ -165,16 +157,9 @@ class Trainer(abc.ABC):
         raise NotImplementedError()
 
     @staticmethod
-    def _print(message, verbose=True):
-        """ Simple wrapper around print to make it conditional """
-        if verbose:
-            print(message)
-
-    @staticmethod
     def _foreach_batch(
             dl: DataLoader,
             forward_fn: Callable[[Any], BatchResult],
-            verbose=True,
             max_batches=None,
     ) -> EpochResult:
         """
@@ -183,26 +168,15 @@ class Trainer(abc.ABC):
         """
         losses = []
         batch_results = np.array([])
-        num_correct = 0
-        num_samples = len(dl.sampler)
-        num_batches = len(dl.batch_sampler)
-
-        if max_batches is not None:
-            if max_batches < num_batches:
-                num_batches = max_batches
-                num_samples = num_batches * dl.batch_size
-
-        if verbose:
-            pbar_file = sys.stdout
-        else:
-            pbar_file = open(os.devnull, "w")
+        num_batches = len(dl.batch_sampler) if max_batches is None else max_batches
 
         pbar_name = forward_fn.__name__
-        with tqdm.tqdm(desc=pbar_name, total=num_batches, file=pbar_file) as pbar:
-            # dl_iter = iter(dl)
-            # for batch_idx in range(num_batches):
+        with tqdm.tqdm(desc=pbar_name, total=num_batches, file=sys.stdout) as pbar:
+
             for batch_idx, data in enumerate(dl):
-                # data = next(dl_iter)
+                if max_batches and batch_idx > max_batches:
+                    break
+
                 batch_res = forward_fn(data)
 
                 pbar.set_description(f"{pbar_name} ({batch_res[0]:.3f})")
@@ -210,16 +184,15 @@ class Trainer(abc.ABC):
 
                 losses.append(batch_res[0])
                 batch_results = np.concatenate((batch_results, np.array(batch_res[1])))
-                # batch_results.concatenate(batch_res)
-                # num_correct += batch_res.num_correct
 
-            avg_loss = sum(losses) / num_batches
-            # accuracy = 100.0 * num_correct / num_samples    # TODO update to handle N number of metrics
+
+            # calc the metrics for all the batches in the epoch
+            avg_loss = np.mean(losses).item()
             accuracy = sum(batch_results) / len(batch_results)
             pbar.set_description(
-                f"{pbar_name} "
+                f"Epoch metrics:"
                 f"(Avg. Loss {avg_loss:.3f}, "
                 f"Accuracy {accuracy:.1f})"
             )
 
-        return EpochResult(losses=losses, accuracy=accuracy)
+        return EpochResult(loss=avg_loss, accuracy=accuracy)

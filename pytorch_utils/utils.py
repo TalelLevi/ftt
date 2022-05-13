@@ -150,7 +150,7 @@ def measure_runtime(func):
         te = time.time()
 
         runtime = round(te-ts, 2)
-        print(f'{func.__name__} ran in {runtime}s')
+        # print(f'{func.__name__} ran in {runtime}s')
 
-        return result
+        return runtime, result
     return wrapper

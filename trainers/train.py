@@ -43,12 +43,12 @@ class TorchTrainer(Trainer):
         with torch.no_grad():
             # Evaluate the PyTorch model on one batch of data.
             self.model.train(False)
-            y_hat = self.model(X)                   # same as calling model.forward()
-            loss = self.loss_fn(y_hat, y).item()    # same as calling loss_fn.forward()
-            num_correct = torch.sum(torch.argmax(y_hat, axis=1) == y).float().item()
+            model_out = self.model(X)                   # same as calling model.forward()
+            loss = self.loss_fn(model_out, y).item()    # same as calling loss_fn.forward()
+            # num_correct = torch.sum(torch.argmax(y_hat, axis=1) == y).float().item()
 
         # calculate the metric
-        metrics = [metric(y_hat, y) for metric in self.metric]
+        metrics = [metric(model_out, y) for metric in self.metric]
         # return BatchResult(loss, num_correct)
 
         return loss, metrics
