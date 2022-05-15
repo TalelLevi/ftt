@@ -5,12 +5,9 @@ from data_loader.data_loader import Dataset
 # from models.vit import ViT
 from metrics.accuracy_metric import accuracy_metric
 from trainers.train import TorchTrainer as Trainer
-from clearml import Task
 from settings import *
 
-task = Task.init(project_name=mlops_settings['project_name'],
-                 task_name=mlops_settings['task_name'])
-logger = task.get_logger()
+
 
 # standard imagenet stats
 imagenet_mean = [0.485, 0.456, 0.406]
@@ -33,13 +30,13 @@ val_dataset = Dataset(os.path.join(os.path.join('data', 'imagenette2'), 'val'), 
                       preload_data=False, tqdm_bar=True)
 
 # train_loader = torch.utils.data.DataLoader(train_dataset,
-#                                            batch_size=16,
-#                                            num_workers=2,
+#                                            batch_size=loader_settings['batch_size'],
+#                                            num_workers=loader_settings['num_workers'],
 #                                            drop_last=True, shuffle=True, pin_memory=True)
 #
 # val_loader = torch.utils.data.DataLoader(val_dataset,
-#                                          batch_size=16,
-#                                          num_workers=2,
+#                                          batch_size=loader_settings['batch_size'],
+#                                          num_workers=loader_settings['num_workers'],
 #                                          drop_last=True, shuffle=False, pin_memory=True)
 
 train_loader = create_train_loader(train_dataset=train_dataset,
