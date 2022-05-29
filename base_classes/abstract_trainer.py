@@ -46,6 +46,7 @@ class Trainer(abc.ABC):
             dl_train: DataLoader,
             dl_test: DataLoader,
             num_epochs,
+            batch_size,
             checkpoint_path: str = None,
             early_stopping: int = None,
             **kw,
@@ -72,7 +73,7 @@ class Trainer(abc.ABC):
         for epoch in range(num_epochs):
             print(f"--- EPOCH {epoch + 1}/{num_epochs} ---")
 
-            epoch_time, res = self.train_epoch(dl_train, **kw)
+            epoch_time, res = self.train_epoch(dl_train, batch_size=batch_size, **kw)
 
             self.logger.report_scalar(title=f'Loss per epoch',
                                       series='Loss', value=res.loss, iteration=epoch)
@@ -81,7 +82,7 @@ class Trainer(abc.ABC):
                                       series='Accuracy', value=res.accuracy, iteration=epoch)
 
             self.logger.report_scalar(title=f'Runtime by epoch',
-                                      series='mili-seconds', value=epoch_time, iteration=epoch)
+                                      series='Seconds', value=epoch_time, iteration=epoch)
 
             train_loss.append(res.loss)
             train_acc.append(res.accuracy)
@@ -111,7 +112,7 @@ class Trainer(abc.ABC):
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
 
     @measure_runtime
-    def train_epoch(self, dl_train: DataLoader, **kw) -> EpochResult:
+    def train_epoch(self, dl_train: DataLoader, batch_size: int, **kw) -> EpochResult:
         """
         Train once over a training set (single epoch).
         :param dl_train: DataLoader for the training set.
@@ -119,7 +120,7 @@ class Trainer(abc.ABC):
         :return: An EpochResult for the epoch.
         """
         self.model.train(True)  # set train mode
-        return self._foreach_batch(dl_train, self.train_batch, **kw)
+        return self._foreach_batch(dl_train, self.train_batch, batch_size=batch_size, **kw)
 
     def test_epoch(self, dl_test: DataLoader, **kw) -> EpochResult:
         """
@@ -161,6 +162,7 @@ class Trainer(abc.ABC):
             dl: DataLoader,
             forward_fn: Callable[[Any], BatchResult],
             max_batches=None,
+            batch_size=None,
     ) -> EpochResult:
         """
         Evaluates the given forward-function on batches from the given
@@ -168,7 +170,7 @@ class Trainer(abc.ABC):
         """
         losses = []
         batch_results = np.array([])
-        num_batches = len(dl.batch_sampler) if max_batches is None else max_batches
+        num_batches = len(dl)//batch_size if max_batches is None else max_batches
 
         pbar_name = forward_fn.__name__
         with tqdm.tqdm(desc=pbar_name, total=num_batches, file=sys.stdout) as pbar:

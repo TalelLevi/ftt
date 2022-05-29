@@ -18,8 +18,9 @@ class TorchTrainer(Trainer):
         self.model.train()
 
         # forward pass
-        model_out = self.model(X)
-        loss = self.loss_fn(model_out, y)
+        with torch.cuda.amp.autocast():
+            model_out = self.model(X)
+            loss = self.loss_fn(model_out, y)
 
         # backward pass
         self.optimizer.zero_grad()

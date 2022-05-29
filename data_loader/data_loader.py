@@ -24,7 +24,6 @@ IMAGENET_STD = np.array([0.229, 0.224, 0.225]) * 255
 DEFAULT_CROP_RATIO = 224/256
 
 
-
 class Dataset(torch.utils.data.Dataset):
     """ a Dataset class for preloading data into memory """
     def __init__(self,
@@ -67,8 +66,6 @@ class Dataset(torch.utils.data.Dataset):
         return img, l
 
 ####################################################################
-
-
 
 
 Section('resolution', 'resolution scheduling').params(
@@ -128,16 +125,16 @@ Section('dist', 'distributed training options').params(
 @param('training.batch_size')
 @param('training.distributed')
 @param('data.in_memory')
-def create_train_loader(self, train_dataset, num_workers, batch_size,
+def create_train_loader(train_dataset, num_workers, batch_size,
                         distributed, in_memory):
-    this_device = f'cuda:{self.gpu}'
+    this_device = f'cuda:{0}'
     train_path = Path(train_dataset)
     assert train_path.is_file()
 
-    res = self.get_resolution(epoch=0)
-    self.decoder = RandomResizedCropRGBImageDecoder((res, res))
+    res = 224 # self.get_resolution(epoch=0) # TODO find the func
+    decoder = RandomResizedCropRGBImageDecoder((res, res))
     image_pipeline: List[Operation] = [
-        self.decoder,
+        decoder,
         RandomHorizontalFlip(),
         ToTensor(),
         ToDevice(torch.device(this_device), non_blocking=True),
@@ -173,9 +170,9 @@ def create_train_loader(self, train_dataset, num_workers, batch_size,
 @param('validation.batch_size')
 @param('validation.resolution')
 @param('training.distributed')
-def create_val_loader(self, val_dataset, num_workers, batch_size,
+def create_val_loader(val_dataset, num_workers, batch_size,
                       resolution, distributed):
-    this_device = f'cuda:{self.gpu}'
+    this_device = f'cuda:{0}'
     val_path = Path(val_dataset)
     assert val_path.is_file()
     res_tuple = (resolution, resolution)
