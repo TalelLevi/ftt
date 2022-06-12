@@ -8,7 +8,7 @@ class TorchTrainer(Trainer):
     def __init__(self, model, loss_fn, optimizer, metrics=None, device=None, logger=None):  # TODO add base metric
         super().__init__(model, loss_fn, optimizer, metrics, device, logger)
 
-    def train_batch(self, batch):  # -> BatchResult:
+    def train_batch(self, batch):
         X, y = batch
         if self.device:
             X = X.to(self.device)
@@ -32,10 +32,9 @@ class TorchTrainer(Trainer):
         # calculate the metric
         metrics = [metric(model_out, y) for metric in self.metric]
 
-        # return BatchResult(loss.item(), metrics)
         return loss.item(), metrics
 
-    def test_batch(self, batch):# -> BatchResult:
+    def test_batch(self, batch):
         X, y = batch
         if self.device:
             X = X.to(self.device)
@@ -46,10 +45,8 @@ class TorchTrainer(Trainer):
             self.model.train(False)
             model_out = self.model(X)                   # same as calling model.forward()
             loss = self.loss_fn(model_out, y).item()    # same as calling loss_fn.forward()
-            # num_correct = torch.sum(torch.argmax(y_hat, axis=1) == y).float().item()
 
         # calculate the metric
         metrics = [metric(model_out, y) for metric in self.metric]
-        # return BatchResult(loss, num_correct)
 
         return loss, metrics

@@ -1,12 +1,9 @@
 import os
 import time
 import warnings
-from typing import Union, Optional, Callable, Any, Dict, List, Tuple
+from typing import Union, Optional, Callable
 from contextlib import contextmanager
-
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -150,7 +147,6 @@ def measure_runtime(func):
         te = time.time()
 
         runtime = round(te-ts, 2)
-        # print(f'{func.__name__} ran in {runtime}s')
 
         return runtime, result
     return wrapper

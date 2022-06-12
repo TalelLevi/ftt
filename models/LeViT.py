@@ -468,7 +468,7 @@ class LeViT(torch.nn.Module):
                 x = (x[0] + x[1]) / 2
         else:
             x = self.head(x)
-        return inputs, x
+        return x
 
 
 def model_factory(C, D, X, N, drop_path, weights,

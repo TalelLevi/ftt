@@ -1,12 +1,11 @@
-
 from clearml import Task
-DATASET_DIRECTORY = '/home/talel-levi/datasets/imagenet'
 
+DATASET_DIRECTORY = '/home/talel-levi/fft/data/ffcv/imagenette2'
 
 mlops_settings = {
     'ClearML': True,
     'init_settings': {'project_name': 'Fast ViT learning',
-                      'task_name': 'LeViT with FFCV'}
+                      'task_name': 'LeViT with FFCV lr 1e-5 exp 1'}
 
 }
 
@@ -17,15 +16,22 @@ manager_settings = {
 }
 
 transformations_settings = {
-
+    'imagenet_mean': [0.485, 0.456, 0.406],
+    'imagenet_std': [0.229, 0.224, 0.225]
 }
 
 loader_settings = {
-    'dataset': {'train': f'{DATASET_DIRECTORY}/igor/train_500_0.50_90.ffcv',
-                     'val': f'{DATASET_DIRECTORY}/val_500_0.5_90.ffcv',
-                     'test': f'{DATASET_DIRECTORY}/empty'},
+    'FFCV': True,
+    'dataset': {'train': f'{DATASET_DIRECTORY}/train_500_0.50_90.ffcv',
+                'val': f'{DATASET_DIRECTORY}/val_500_0.50_90.ffcv',
+                'test': f'{DATASET_DIRECTORY}/empty'},
+    # 'dataset': {'train': f'/home/talel-levi/fft/data/imagenette2/train',
+    #             'val': f'/home/talel-levi/fft/data/imagenette2/val',
+    #             'test': f'/home/talel-levi/fft/data/imagenette2/empty'},
     'num_workers': 2,
-    'batch_size': 16,
+    'batch_size': 64,
+    'distributed': 0,
+    'resolution': 224,
     'in_memory': 1  # for ffcv
 }
 
@@ -40,7 +46,7 @@ model_settings = {
 }
 
 optimizer_settings = {
-    'learning_rate': 1e-4,
+    'learning_rate': 1e-5,
 }
 
 scheduler_settings = {
@@ -62,7 +68,6 @@ preprocess_settings = {
 postprocess_settings = {
 
 }
-
 
 ## logger handler ##
 if mlops_settings['ClearML']:

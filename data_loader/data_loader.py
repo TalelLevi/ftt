@@ -1,23 +1,17 @@
 import torch
 import torchvision
 import tqdm
+import numpy as np
 
-
+from typing import List
 from pathlib import Path
+
 from ffcv.pipeline.operation import Operation
 from ffcv.loader import Loader, OrderOption
-from ffcv.transforms import ToTensor, ToDevice, Squeeze, NormalizeImage, \
-    RandomHorizontalFlip, ToTorchImage
-from ffcv.fields.rgb_image import CenterCropRGBImageDecoder, \
-    RandomResizedCropRGBImageDecoder
+from ffcv.transforms import ToTensor, ToDevice, Squeeze, NormalizeImage, RandomHorizontalFlip, ToTorchImage
+from ffcv.fields.rgb_image import CenterCropRGBImageDecoder, RandomResizedCropRGBImageDecoder
 from ffcv.fields.basics import IntDecoder
-import numpy as np
-from typing import List
 
-from fastargs import get_current_config
-from fastargs.decorators import param
-from fastargs import Param, Section
-from fastargs.validation import And, OneOf
 
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406]) * 255
 IMAGENET_STD = np.array([0.229, 0.224, 0.225]) * 255
@@ -68,66 +62,8 @@ class Dataset(torch.utils.data.Dataset):
 ####################################################################
 
 
-Section('resolution', 'resolution scheduling').params(
-    min_res=Param(int, 'the minimum (starting) resolution', default=160),
-    max_res=Param(int, 'the maximum (starting) resolution', default=160),
-    end_ramp=Param(int, 'when to stop interpolating resolution', default=0),
-    start_ramp=Param(int, 'when to start interpolating resolution', default=0)
-)
-
-Section('data', 'data related stuff').params(
-    train_dataset=Param(str, '.dat file to use for training', required=True),
-    val_dataset=Param(str, '.dat file to use for validation', required=True),
-    num_workers=Param(int, 'The number of workers', required=True),
-    in_memory=Param(int, 'does the dataset fit in memory? (1/0)', required=True)
-)
-
-Section('lr', 'lr scheduling').params(
-    step_ratio=Param(float, 'learning rate step ratio', default=0.1),
-    step_length=Param(int, 'learning rate step length', default=30),
-    lr_schedule_type=Param(OneOf(['step', 'cyclic']), default='cyclic'),
-    lr=Param(float, 'learning rate', default=0.5),
-    lr_peak_epoch=Param(int, 'Epoch at which LR peaks', default=2),
-)
-
-Section('logging', 'how to log stuff').params(
-    folder=Param(str, 'log location', required=True),
-    log_level=Param(int, '0 if only at end 1 otherwise', default=1)
-)
-
-Section('validation', 'Validation parameters stuff').params(
-    batch_size=Param(int, 'The batch size for validation', default=512),
-    resolution=Param(int, 'final resized validation image size', default=224),
-    lr_tta=Param(int, 'should do lr flipping/avging at test time', default=1)
-)
-
-Section('training', 'training hyper param stuff').params(
-    eval_only=Param(int, 'eval only?', default=0),
-    batch_size=Param(int, 'The batch size', default=512),
-    optimizer=Param(And(str, OneOf(['sgd'])), 'The optimizer', default='sgd'),
-    momentum=Param(float, 'SGD momentum', default=0.9),
-    weight_decay=Param(float, 'weight decay', default=4e-5),
-    epochs=Param(int, 'number of epochs', default=30),
-    label_smoothing=Param(float, 'label smoothing parameter', default=0.1),
-    distributed=Param(int, 'is distributed?', default=0),
-    use_blurpool=Param(int, 'use blurpool?', default=0)
-)
-
-Section('dist', 'distributed training options').params(
-    world_size=Param(int, 'number gpus', default=1),
-    address=Param(str, 'address', default='localhost'),
-    port=Param(str, 'port', default='12355')
-)
-
-
-@param('data.train_dataset')
-@param('data.num_workers')
-@param('training.batch_size')
-@param('training.distributed')
-@param('data.in_memory')
-def create_train_loader(train_dataset, num_workers, batch_size,
-                        distributed, in_memory):
-    this_device = f'cuda:{0}'
+def create_train_loader(train_dataset, num_workers, batch_size, distributed, in_memory):
+    this_device = f'cuda:{0}' if torch.cuda.is_available() else 'cpu'
     train_path = Path(train_dataset)
     assert train_path.is_file()
 
@@ -165,14 +101,9 @@ def create_train_loader(train_dataset, num_workers, batch_size,
     return loader
 
 
-@param('data.val_dataset')
-@param('data.num_workers')
-@param('validation.batch_size')
-@param('validation.resolution')
-@param('training.distributed')
-def create_val_loader(val_dataset, num_workers, batch_size,
-                      resolution, distributed):
-    this_device = f'cuda:{0}'
+def create_val_loader(val_dataset, num_workers, batch_size, resolution=224, distributed=0):
+    this_device = f'cuda:{0}' if torch.cuda.is_available() else 'cpu'
+    print(f'using Cuda ? #### {this_device} ####')
     val_path = Path(val_dataset)
     assert val_path.is_file()
     res_tuple = (resolution, resolution)
