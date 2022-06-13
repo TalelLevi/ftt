@@ -7,8 +7,8 @@
 ## Results
 Train transformers more efficiently,
 
-first, we can see that by incorporating FFCV into models can significantly shorten the training times. 
-Up to 20% times reduction in ViT and Up to 75% times reduction in LeViT.
+first, we can see that by incorporating FFCV into models can significantly shorten the training times.
+Up to 20% reduction of training time for ViT and Up to 75% reduction of training time for LeViT
 
 <img src="assets/runtime_per_epoch.png" width='830px'/>
 
