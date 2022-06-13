@@ -7,7 +7,22 @@
 ## Results
 Train transformers more efficiently,
 
-<img src="assets/perf_scatterplot.svg" width='830px'/>
+first, we can see that by incorporating FFCV into models can significantly shorten the training times. 
+Up to 20% times reduction in ViT and Up to 75% times reduction in LeViT.
+
+<img src="assets/runtime_per_epoch.png" width='830px'/>
+
+
+second, the performance of the network didn’t suffer any hindrance due to the incorporation of FFCV.
+
+* same accuracy performance
+
+<img src="assets/accuracy_per_epoch.png" width='830px'/>
+
+* same loss performance
+
+<img src="assets/loss_per_epoch.png" width='830px'/>
+
 
 
 
