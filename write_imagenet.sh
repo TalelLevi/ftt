@@ -1,10 +1,7 @@
 #!/bin/bash
 
-#export WRITE_DIR=/home/talel-levi/datasets/imagenet
-#export IMAGENET_DIR=/home/talel-levi/datasets/ILSVRC/Data/CLS-LOC
-
 export WRITE_DIR=/home/talel-levi/fft/data/ffcv/imagenette2
-export IMAGENET_DIR=/home/talel-levi/fft/data/imagenette2
+export DATA_DIR=/home/talel-levi/fft/data/imagenette2
 
 write_dataset () {
     write_path=$WRITE_DIR/${1}_${2}_${3}_${4}.ffcv
@@ -12,7 +9,7 @@ write_dataset () {
     python write_imagenet.py \
         --cfg.dataset=imagenet \
         --cfg.split=${1} \
-        --cfg.data_dir=$IMAGENET_DIR/${1} \
+        --cfg.data_dir=$DATA_DIR/${1} \
         --cfg.write_path=$write_path \
         --cfg.max_resolution=${2} \
         --cfg.write_mode=proportion \

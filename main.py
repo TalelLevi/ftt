@@ -1,10 +1,8 @@
 import torch
 import torchvision
-from data_loader.data_loader import Dataset
 from models.LeViT import LeViT_128S as LeViT
 from metrics.accuracy_metric import accuracy_metric
 from loss_functions import distilation_loss
-from data_loader.data_loader import create_train_loader, create_val_loader
 from trainers.train import TorchTrainer as Trainer
 from settings import *
 
@@ -17,6 +15,7 @@ transform = torchvision.transforms.Compose([
 ])
 
 if loader_settings['FFCV']:
+    from data_loader.data_loader import create_train_loader, create_val_loader
     train_loader = create_train_loader(train_dataset=loader_settings['dataset']['train'],
                                        num_workers=loader_settings['num_workers'],
                                        batch_size=loader_settings['batch_size'],
