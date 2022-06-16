@@ -1,4 +1,3 @@
-# attempting to improve the training time of Transformers
 
 # `ffcv` ViT and LeViT Training
 - ...achive same model's performance at a fraction of the training time.
@@ -67,30 +66,25 @@ train/
 Adjust the configuration by changing the settings file.
 
 ## Training Details
-<p><b>System setup.</b> We trained on p4.24xlarge ec2 instances (8 A100s).
+<p><b>System setup.</b> We trained on RTX 2080Ti
 </p>
 
 <p><b>Dataset setup. Generally larger side length will aid in accuracy but decrease
 throughput:</b>
 
- - ResNet-50 training: 50% JPEG 500px side length
- - ResNet-18 training: 10% JPEG 400px side length
+ - all ViT training: 50% JPEG 500px side length (ViT base and LeViT 128S)
 
 </p>
 
 
-<p><b>Algorithmic details.</b> We use a standard ImageNet training pipeline (à la the PyTorch ImageNet example) with only the following differences/highlights:
+<p><b>Algorithmic details.</b> 
 
-- SGD optimizer with momentum and weight decay on all non-batchnorm parameters
-- Test-time augmentation over left/right flips
-- Progressive resizing from 160px to 192px: 160px training until 75% of the way through training (by epochs), then 192px until the end of training.
-- Validation set sizing according to ["Fixing the train-test resolution discrepancy"](https://arxiv.org/abs/1906.06423): 224px at test time.
-- Label smoothing
-- Cyclic learning rate schedule
+- ADAM optimizer learning rate 1e-5
+
 </p>
 
 Refer to the code and configuration files for a more exact specification.
-To obtain configurations we first gridded for hyperparameters at a 30 epoch schedule. Fixing these parameters, we then varied only the number of epochs (stretching the learning rate schedule across the number of epochs as motivated by [Budgeted Training](https://arxiv.org/abs/1905.04753)) and plotted the results above.
+
 
 ## FAQ
 ### Why is the first epoch slow?
