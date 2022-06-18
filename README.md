@@ -34,6 +34,9 @@ The configuration files corresponding to the above results are:
 
 First pip install the requirements file in this directory:
 ```
+conda create -n ffcv python=3.9 cupy pkg-config compilers libjpeg-turbo opencv pytorch torchvision cudatoolkit=11.3 numba -c pytorch -c conda-forge
+conda activate ffcv
+pip install ffcv
 pip install -r requirements.txt
 ```
 

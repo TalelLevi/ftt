@@ -1,6 +1,7 @@
 import torch
 import torchvision
 from models.LeViT import LeViT_128S as LeViT
+# from models.nat import NAT
 from metrics.accuracy_metric import accuracy_metric
 from loss_functions import distilation_loss
 from trainers.train import TorchTrainer as Trainer
@@ -59,6 +60,7 @@ else:
 
 # model = torchvision.models.vit_b_16()
 model = LeViT(distillation=False, num_classes=10)
+# model = NAT(num_classes=10)
 
 criterion = torch.nn.CrossEntropyLoss()
 # criterion = distilation_loss()

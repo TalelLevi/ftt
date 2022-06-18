@@ -1,11 +1,11 @@
-from clearml import Task
+
 
 DATASET_DIRECTORY = '/home/talel-levi/fft/data/ffcv/imagenette2'
 
 mlops_settings = {
     'ClearML': True,
     'init_settings': {'project_name': 'Fast ViT learning',
-                      'task_name': 'LeViT with FFCV lr 1e-5 exp 1'}
+                      'task_name': 'NAT with FFCV lr 1e-5 exp 1'}
 
 }
 
@@ -71,6 +71,7 @@ postprocess_settings = {
 
 ## logger handler ##
 if mlops_settings['ClearML']:
+    from clearml import Task
     task = Task.init(**mlops_settings['init_settings'])
     manager_settings = task.connect(manager_settings, 'manager settings')
     transformations_settings = task.connect(transformations_settings, 'transformations settings')
